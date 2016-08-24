@@ -17,7 +17,14 @@ RUN wget -q -O - $(wget -q -O - "http://www.apache.org/dyn/closer.cgi?as_json=1"
     tar -xzf - -C /opt && \
     mv /opt/flink-$FLINK_VERSION $FLINK_HOME
 
+# See https://ci.apache.org/projects/flink/flink-docs-master/apis/best_practices.html#use-logback-when-running-flink-on-a-cluster
+RUN rm $FLINK_HOME/lib/log4j-*.jar $FLINK_HOME/lib/slf4j-log4j12-*.jar && cd $FLINK_HOME/lib && \
+    wget -q http://central.maven.org/maven2/ch/qos/logback/logback-core/1.1.7/logback-core-1.1.7.jar && \
+    wget -q http://central.maven.org/maven2/ch/qos/logback/logback-classic/1.1.7/logback-classic-1.1.7.jar && \
+    wget -q http://central.maven.org/maven2/org/slf4j/log4j-over-slf4j/1.7.21/log4j-over-slf4j-1.7.21.jar
+
 COPY conf/* $FLINK_HOME/conf/
+RUN rm $FLINK_HOME/conf/log4j.properties
 ADD scripts/start-flink.sh /usr/bin/
 ADD scripts/supervise-flink.sh /usr/bin/
 ADD supervisor-jobmanager.ini /etc/supervisor.d/
